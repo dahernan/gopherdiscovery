@@ -2,31 +2,43 @@
 
 This is a library to provides a simple way to do service discovery in Go, or other languages compatibles with [nanomsg](http://nanomsg.org/)/[mangos](https://github.com/gdamore/mangos)
 
+# Install and Usage
+
+```
+go get github.com/dahernan/gopherdiscovery
+```
+
+```go
+import "github.com/dahernan/gopherdiscovery"
+```
+
+
 # Use cases
 
 ## Subscribe to changes in client connections/disconections
 ```go
-	var clients []string
-	urlServ := "tcp://127.0.0.1:40009"
-	urlPubSub := "tcp://127.0.0.1:50009"
 
-	server, err := Server(urlServ, urlPubSub, defaultOpts)
+var clients []string
+urlServ := "tcp://127.0.0.1:40009"
+urlPubSub := "tcp://127.0.0.1:50009"
 
-	ctx, cancel := context.WithCancel(context.Background())
-	sub, err := NewSubscriber(ctx, urlPubSub)
+server, err := Server(urlServ, urlPubSub, defaultOpts)
 
-	Client(urlServ, "client1")
-	Client(urlServ, "client2")
+ctx, cancel := context.WithCancel(context.Background())
+sub, err := NewSubscriber(ctx, urlPubSub)
 
-	clients = <-sub.Changes()
-	// clients = []string{"client1", "client2"}	
+Client(urlServ, "client1")
+Client(urlServ, "client2")
 
-	Client(urlServ, "client3")
+clients = <-sub.Changes()
+// clients = []string{"client1", "client2"}	
 
-	clients = <-sub.Changes()
-	// clients = []string{"client1", "client2", "client3"}
+Client(urlServ, "client3")
 
-	cancel() // stops subscribe
+clients = <-sub.Changes()
+// clients = []string{"client1", "client2", "client3"}
+
+cancel() // stops subscribe
 
 ```
 
