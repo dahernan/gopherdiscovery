@@ -62,7 +62,7 @@ for nodes := range peers {
 
 ```
 
-## Subscribe to changes in clients connections/disconections
+## Subscribe to changes in clients (connections/disconections)
 ```go
 
 var clients []string
