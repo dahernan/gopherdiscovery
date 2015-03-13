@@ -36,9 +36,6 @@ type DiscoveryServer struct {
 type Services struct {
 	nodes     StringSet
 	publisher *Publisher
-
-	ctx   context.Context
-	addCh chan StringSet
 }
 
 type Publisher struct {
@@ -62,8 +59,7 @@ func Server(urlServer string, urlPubSub string, opt Options) (*DiscoveryServer, 
 		return nil, err
 	}
 
-	servicesCtx, _ := context.WithCancel(ctx)
-	services := NewServices(servicesCtx, publisher)
+	services := NewServices(publisher)
 
 	sock, err = surveyor.NewSocket()
 	if err != nil {
@@ -197,37 +193,16 @@ func (p *Publisher) run() {
 	}
 }
 
-func NewServices(ctx context.Context, publisher *Publisher) *Services {
+func NewServices(publisher *Publisher) *Services {
 	s := &Services{
 		nodes:     NewStringSet(),
-		ctx:       ctx,
-		addCh:     make(chan StringSet),
 		publisher: publisher,
 	}
 
-	go s.run()
 	return s
 }
 
-func (s *Services) run() {
-	for {
-		select {
-		case <-s.ctx.Done():
-			return
-		case msg := <-s.addCh:
-			fmt.Println("===: addCh ")
-			s.add(msg)
-		}
-	}
-}
-
 func (s *Services) Add(responses StringSet) {
-	fmt.Println("===: Add ")
-
-	s.addCh <- responses
-}
-
-func (s *Services) add(responses StringSet) {
 	s.nodes = responses.Clone()
 	// publish the changes
 	s.publisher.Publish(s.nodes.ToSlice())

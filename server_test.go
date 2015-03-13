@@ -9,9 +9,9 @@ import (
 
 var (
 	defaultOpts = Options{
-		SurveyTime:   1 * time.Second,
-		RecvDeadline: 1 * time.Second,
-		PollTime:     2 * time.Second,
+		SurveyTime:   10 * time.Millisecond,
+		RecvDeadline: 10 * time.Millisecond,
+		PollTime:     20 * time.Millisecond,
 	}
 )
 
@@ -198,6 +198,52 @@ func TestServerDiscoveryRemoveClients(t *testing.T) {
 
 		server.Cancel()
 		clientOne.Cancel()
+
+	})
+}
+
+func TestServerDiscoveryOnlyChanges(t *testing.T) {
+	Convey("Discover multiple clients", t, func() {
+		urlServ := "tcp://127.0.0.1:40007"
+		urlPubSub := "tcp://127.0.0.1:50007"
+
+		server, err := Server(urlServ, urlPubSub, defaultOpts)
+		So(err, ShouldBeNil)
+
+		// client1
+		clientOne, err := Client(urlServ, urlPubSub, "client1")
+		So(err, ShouldBeNil)
+
+		// client2
+		clientTwo, err := Client(urlServ, urlPubSub, "client2")
+		So(err, ShouldBeNil)
+
+		// client3
+		clientThree, err := Client(urlServ, urlPubSub, "client3")
+		So(err, ShouldBeNil)
+
+		clients := <-clientOne.Nodes()
+
+		So(clients, ShouldContain, "client1")
+		So(clients, ShouldContain, "client2")
+		So(clients, ShouldContain, "client3")
+
+		clients = <-clientTwo.Nodes()
+
+		So(clients, ShouldContain, "client1")
+		So(clients, ShouldContain, "client2")
+		So(clients, ShouldContain, "client3")
+
+		clients = <-clientThree.Nodes()
+
+		So(clients, ShouldContain, "client1")
+		So(clients, ShouldContain, "client2")
+		So(clients, ShouldContain, "client3")
+
+		server.Cancel()
+		clientOne.Cancel()
+		clientTwo.Cancel()
+		clientThree.Cancel()
 
 	})
 }
