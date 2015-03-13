@@ -1,6 +1,7 @@
 package gopherdiscovery
 
 import (
+	"errors"
 	"log"
 	"strings"
 
@@ -43,16 +44,23 @@ type Subscriber struct {
 	changes chan []string
 }
 
-func Client(urlServer string, urlPubSub string, service string) (*DiscoveryClient, error) {
+func Client(urlServer string, service string) (*DiscoveryClient, error) {
+	return ClientWithSub(urlServer, "", service)
+}
+
+func ClientWithSub(urlServer string, urlPubSub string, service string) (*DiscoveryClient, error) {
 	var sock mangos.Socket
 	var err error
 	var subscriber *Subscriber
 
 	ctx, cancel := context.WithCancel(context.Background())
-	subCtx, _ := context.WithCancel(ctx)
-	subscriber, err = NewSubscriber(subCtx, urlPubSub)
-	if err != nil {
-		return nil, err
+
+	if urlPubSub != "" {
+		subCtx, _ := context.WithCancel(ctx)
+		subscriber, err = NewSubscriber(subCtx, urlPubSub)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	sock, err = respondent.NewSocket()
@@ -81,8 +89,11 @@ func Client(urlServer string, urlPubSub string, service string) (*DiscoveryClien
 	return client, nil
 }
 
-func (d *DiscoveryClient) Nodes() chan []string {
-	return d.subscriber.Changes()
+func (d *DiscoveryClient) Peers() (chan []string, error) {
+	if d.subscriber == nil {
+		return nil, errors.New("No subcribe url is provided to discover the Peers")
+	}
+	return d.subscriber.Changes(), nil
 }
 
 func (d *DiscoveryClient) Cancel() {

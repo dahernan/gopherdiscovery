@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/net/context"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -37,7 +39,7 @@ func TestClientCancel(t *testing.T) {
 		server, err := Server(urlServ, urlPubSub, defaultOpts)
 		So(err, ShouldBeNil)
 
-		client, err := Client(urlServ, urlPubSub, "client1")
+		client, err := ClientWithSub(urlServ, urlPubSub, "client1")
 		So(err, ShouldBeNil)
 
 		server.Cancel()
@@ -55,10 +57,12 @@ func TestServerDiscovery(t *testing.T) {
 		server, err := Server(urlServ, urlPubSub, defaultOpts)
 		So(err, ShouldBeNil)
 
-		client, err := Client(urlServ, urlPubSub, "client1")
+		client, err := ClientWithSub(urlServ, urlPubSub, "client1")
 		So(err, ShouldBeNil)
 
-		clients := <-client.Nodes()
+		peers, err := client.Peers()
+		So(err, ShouldBeNil)
+		clients := <-peers
 
 		So(clients, ShouldResemble, []string{"client1"})
 
@@ -77,30 +81,36 @@ func TestServerDiscoveryMultipleClients(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		// client1
-		clientOne, err := Client(urlServ, urlPubSub, "client1")
+		clientOne, err := ClientWithSub(urlServ, urlPubSub, "client1")
 		So(err, ShouldBeNil)
 
 		// client2
-		clientTwo, err := Client(urlServ, urlPubSub, "client2")
+		clientTwo, err := ClientWithSub(urlServ, urlPubSub, "client2")
 		So(err, ShouldBeNil)
 
 		// client3
-		clientThree, err := Client(urlServ, urlPubSub, "client3")
+		clientThree, err := ClientWithSub(urlServ, urlPubSub, "client3")
 		So(err, ShouldBeNil)
 
-		clients := <-clientOne.Nodes()
+		peers, err := clientOne.Peers()
+		So(err, ShouldBeNil)
+		clients := <-peers
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
 		So(clients, ShouldContain, "client3")
 
-		clients = <-clientTwo.Nodes()
+		peers, err = clientTwo.Peers()
+		So(err, ShouldBeNil)
+		clients = <-peers
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
 		So(clients, ShouldContain, "client3")
 
-		clients = <-clientThree.Nodes()
+		peers, err = clientThree.Peers()
+		So(err, ShouldBeNil)
+		clients = <-peers
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
@@ -123,27 +133,29 @@ func TestServerDiscoveryAddClients(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		// client1
-		clientOne, err := Client(urlServ, urlPubSub, "client1")
+		clientOne, err := ClientWithSub(urlServ, urlPubSub, "client1")
 		So(err, ShouldBeNil)
 
-		clients := <-clientOne.Nodes()
+		peers, err := clientOne.Peers()
+		So(err, ShouldBeNil)
+		clients := <-peers
 
 		So(clients, ShouldContain, "client1")
 
 		// client2
-		clientTwo, err := Client(urlServ, urlPubSub, "client2")
+		clientTwo, err := ClientWithSub(urlServ, urlPubSub, "client2")
 		So(err, ShouldBeNil)
 
-		clients = <-clientOne.Nodes()
+		clients = <-peers
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
 
 		// client3
-		clientThree, err := Client(urlServ, urlPubSub, "client3")
+		clientThree, err := ClientWithSub(urlServ, urlPubSub, "client3")
 		So(err, ShouldBeNil)
 
-		clients = <-clientOne.Nodes()
+		clients = <-peers
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
@@ -166,18 +178,20 @@ func TestServerDiscoveryRemoveClients(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		// client1
-		clientOne, err := Client(urlServ, urlPubSub, "client1")
+		clientOne, err := ClientWithSub(urlServ, urlPubSub, "client1")
 		So(err, ShouldBeNil)
 
 		// client2
-		clientTwo, err := Client(urlServ, urlPubSub, "client2")
+		clientTwo, err := ClientWithSub(urlServ, urlPubSub, "client2")
 		So(err, ShouldBeNil)
 
 		// client3
-		clientThree, err := Client(urlServ, urlPubSub, "client3")
+		clientThree, err := ClientWithSub(urlServ, urlPubSub, "client3")
 		So(err, ShouldBeNil)
 
-		clients := <-clientOne.Nodes()
+		peers, err := clientOne.Peers()
+		So(err, ShouldBeNil)
+		clients := <-peers
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
@@ -185,14 +199,14 @@ func TestServerDiscoveryRemoveClients(t *testing.T) {
 
 		clientThree.Cancel()
 
-		clients = <-clientOne.Nodes()
+		clients = <-peers
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
 
 		clientTwo.Cancel()
 
-		clients = <-clientOne.Nodes()
+		clients = <-peers
 
 		So(clients, ShouldContain, "client1")
 
@@ -211,20 +225,20 @@ func TestServerDiscoveryOnlyChanges(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		// client1
-		clientOne, err := Client(urlServ, urlPubSub, "client1")
+		clientOne, err := ClientWithSub(urlServ, urlPubSub, "client1")
 		So(err, ShouldBeNil)
 
 		// client2
-		clientTwo, err := Client(urlServ, urlPubSub, "client2")
+		clientTwo, err := ClientWithSub(urlServ, urlPubSub, "client2")
 		So(err, ShouldBeNil)
 
 		// client3
-		clientThree, err := Client(urlServ, urlPubSub, "client3")
+		clientThree, err := ClientWithSub(urlServ, urlPubSub, "client3")
 		So(err, ShouldBeNil)
 
-		clients := <-clientOne.Nodes()
-		<-clientTwo.Nodes()
-		<-clientThree.Nodes()
+		peers, err := clientOne.Peers()
+		So(err, ShouldBeNil)
+		clients := <-peers
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
@@ -233,7 +247,7 @@ func TestServerDiscoveryOnlyChanges(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 
 		select {
-		case clients = <-clientOne.Nodes():
+		case clients = <-peers:
 			t.Fail()
 		default:
 
@@ -243,6 +257,53 @@ func TestServerDiscoveryOnlyChanges(t *testing.T) {
 		clientOne.Cancel()
 		clientTwo.Cancel()
 		clientThree.Cancel()
+
+	})
+}
+
+func TestClientAndSubError(t *testing.T) {
+	Convey("Client without subcribe gives an error if you call Peers", t, func() {
+
+		urlServ := "tcp://127.0.0.1:40008"
+		urlPubSub := "tcp://127.0.0.1:50008"
+
+		server, err := Server(urlServ, urlPubSub, defaultOpts)
+		So(err, ShouldBeNil)
+
+		client, err := Client(urlServ, "client1")
+		So(err, ShouldBeNil)
+
+		_, err = client.Peers()
+		So(err, ShouldNotBeNil)
+
+		server.Cancel()
+		client.Cancel()
+
+	})
+}
+
+func TestClientAndIndependentSub(t *testing.T) {
+	Convey("Gets the changes from a Suscriber", t, func() {
+
+		urlServ := "tcp://127.0.0.1:40009"
+		urlPubSub := "tcp://127.0.0.1:50009"
+
+		server, err := Server(urlServ, urlPubSub, defaultOpts)
+		So(err, ShouldBeNil)
+
+		ctx, cancel := context.WithCancel(context.Background())
+		sub, err := NewSubscriber(ctx, urlPubSub)
+		So(err, ShouldBeNil)
+
+		client, err := Client(urlServ, "client1")
+		So(err, ShouldBeNil)
+
+		clients := <-sub.Changes()
+		So(clients, ShouldContain, "client1")
+
+		server.Cancel()
+		cancel()
+		client.Cancel()
 
 	})
 }
