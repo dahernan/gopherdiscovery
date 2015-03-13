@@ -68,13 +68,6 @@ func Server(urlServer string, urlPubSub string, opt Options) (*DiscoveryServer, 
 	var publisher *Publisher
 
 	ctx, cancel := context.WithCancel(context.Background())
-	pubCtx, _ := context.WithCancel(ctx)
-	publisher, err = NewPublisher(pubCtx, urlPubSub)
-	if err != nil {
-		return nil, err
-	}
-
-	services := NewServices(publisher)
 
 	sock, err = surveyor.NewSocket()
 	if err != nil {
@@ -96,6 +89,14 @@ func Server(urlServer string, urlPubSub string, opt Options) (*DiscoveryServer, 
 	if err != nil {
 		return nil, err
 	}
+
+	pubCtx, pubCancel := context.WithCancel(ctx)
+	publisher, err = NewPublisher(pubCtx, urlPubSub)
+	if err != nil {
+		pubCancel()
+		return nil, err
+	}
+	services := NewServices(publisher)
 
 	server := &DiscoveryServer{
 		services: services,

@@ -8,11 +8,17 @@ package gopherdiscovery
 type StringSet map[string]struct{}
 
 // NewStringSet creates and returns a reference to an empty set.
-func NewStringSet(a ...string) StringSet {
+// func NewStringSet(a ...string) StringSet {
+// 	s := make(StringSet)
+// 	for _, i := range a {
+// 		s.Add(i)
+// 	}
+// 	return s
+// }
+
+// NewStringSet creates and returns a reference to an empty set.
+func NewStringSet() StringSet {
 	s := make(StringSet)
-	for _, i := range a {
-		s.Add(i)
-	}
 	return s
 }
 

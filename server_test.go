@@ -307,3 +307,31 @@ func TestClientAndIndependentSub(t *testing.T) {
 
 	})
 }
+
+func TestBadUrlServer(t *testing.T) {
+	Convey("Discovery with bad url", t, func() {
+		urlServ := "tcp://xxx"
+		urlPubSub := "tcp://127.0.0.1:50010"
+
+		_, err := Server(urlServ, urlPubSub, defaultOpts)
+		So(err, ShouldNotBeNil)
+
+		_, err = Client(urlServ, "client1")
+		So(err, ShouldNotBeNil)
+
+	})
+}
+
+func TestBadUrlPubSub(t *testing.T) {
+	Convey("Discovery with bad url", t, func() {
+		urlServ := "tcp://127.0.0.1:40011"
+		urlPubSub := "tcp://xxx"
+
+		_, err := Server(urlServ, urlPubSub, defaultOpts)
+		So(err, ShouldNotBeNil)
+
+		_, err = ClientWithSub(urlServ, urlPubSub, "client1")
+		So(err, ShouldNotBeNil)
+
+	})
+}
