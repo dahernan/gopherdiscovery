@@ -15,33 +15,6 @@ import "github.com/dahernan/gopherdiscovery"
 
 # Use cases
 
-## Subscribe to changes in client connections/disconections
-```go
-
-var clients []string
-urlServ := "tcp://127.0.0.1:40009"
-urlPubSub := "tcp://127.0.0.1:50009"
-
-server, err := Server(urlServ, urlPubSub, defaultOpts)
-
-ctx, cancel := context.WithCancel(context.Background())
-sub, err := NewSubscriber(ctx, urlPubSub)
-
-Client(urlServ, "client1")
-Client(urlServ, "client2")
-
-clients = <-sub.Changes()
-// clients = []string{"client1", "client2"}	
-
-Client(urlServ, "client3")
-
-clients = <-sub.Changes()
-// clients = []string{"client1", "client2", "client3"}
-
-cancel() // stops subscribe
-
-```
-
 ## Discover peers in a cluster
 
 ```go
@@ -88,6 +61,35 @@ for nodes := range peers {
 }
 
 ```
+
+## Subscribe to changes in clients connections/disconections
+```go
+
+var clients []string
+urlServ := "tcp://127.0.0.1:40009"
+urlPubSub := "tcp://127.0.0.1:50009"
+
+server, err := Server(urlServ, urlPubSub, defaultOpts)
+
+// 	"golang.org/x/net/context"
+ctx, cancel := context.WithCancel(context.Background())
+sub, err := NewSubscriber(ctx, urlPubSub)
+
+Client(urlServ, "client1")
+Client(urlServ, "client2")
+
+clients = <-sub.Changes()
+// clients = []string{"client1", "client2"}	
+
+Client(urlServ, "client3")
+
+clients = <-sub.Changes()
+// clients = []string{"client1", "client2", "client3"}
+
+cancel() // stops subscribe
+
+```
+
 
 ## Update the peers in [groupcache](https://github.com/golang/groupcache)
 
