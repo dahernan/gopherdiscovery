@@ -144,6 +144,7 @@ func (s *Subscriber) run() {
 	for {
 		select {
 		case <-s.ctx.Done():
+			close(s.changes)
 			return
 		default:
 			msg, err = s.sock.Recv()

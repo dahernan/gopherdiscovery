@@ -176,6 +176,7 @@ func (p *Publisher) run() {
 	for {
 		select {
 		case <-p.ctx.Done():
+			close(p.publishCh)
 			return
 		case msg := <-p.publishCh:
 			err := p.sock.Send([]byte(strings.Join(msg, "|")))
