@@ -26,7 +26,7 @@ type Options struct {
 }
 
 type DiscoveryServer struct {
-	// url for the Survive heartbeat
+	// url for the survey heartbeat
 	// for example tcp://127.0.0.1:40007
 	urlServer string
 	// url for the Pub/Sub

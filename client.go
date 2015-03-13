@@ -15,7 +15,7 @@ import (
 )
 
 type DiscoveryClient struct {
-	// url for the Survive heartbeat
+	// url for the survey heartbeat
 	// for example tcp://127.0.0.1:40007
 	urlServer string
 	// url for the Pub/Sub
@@ -91,7 +91,7 @@ func ClientWithSub(urlServer string, urlPubSub string, service string) (*Discove
 
 func (d *DiscoveryClient) Peers() (chan []string, error) {
 	if d.subscriber == nil {
-		return nil, errors.New("No subcribe url is provided to discover the Peers")
+		return nil, errors.New("No subscribe url is provided to discover the Peers")
 	}
 	return d.subscriber.Changes(), nil
 }

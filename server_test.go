@@ -262,7 +262,7 @@ func TestServerDiscoveryOnlyChanges(t *testing.T) {
 }
 
 func TestClientAndSubError(t *testing.T) {
-	Convey("Client without subcribe gives an error if you call Peers", t, func() {
+	Convey("Client without subscribe gives an error if you call Peers", t, func() {
 
 		urlServ := "tcp://127.0.0.1:40008"
 		urlPubSub := "tcp://127.0.0.1:50008"
@@ -283,7 +283,7 @@ func TestClientAndSubError(t *testing.T) {
 }
 
 func TestClientAndIndependentSub(t *testing.T) {
-	Convey("Gets the changes from a Suscriber", t, func() {
+	Convey("Gets the changes from a Subscriber", t, func() {
 
 		urlServ := "tcp://127.0.0.1:40009"
 		urlPubSub := "tcp://127.0.0.1:50009"
