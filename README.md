@@ -1,6 +1,6 @@
 # Gopherdiscovery: Simple Service Discovery for Go and nanomsg
 
-This is a library to provides a simple way to do service discovery in Go, or other languages compatibles with [nanomsg](http://nanomsg.org/)/[mangos](https://github.com/gdamore/mangos)
+This is a library to provide a simple way to do service discovery in Go, or other languages compatibles with [nanomsg](http://nanomsg.org/)/[mangos](https://github.com/gdamore/mangos)
 
 # Install and Usage
 
