@@ -14,9 +14,17 @@ import (
 )
 
 type DiscoveryClient struct {
+	// url for the Survive heartbeat
+	// for example tcp://127.0.0.1:40007
 	urlServer string
+	// url for the Pub/Sub
+	// in this url you are going to get the changes on the set of nodes
+	// for example tcp://127.0.0.1:50007
 	urlPubSub string
-	service   string
+
+	// Service that needs to be discovered, for example for a web server could be
+	// http://192.168.1.1:8080
+	service string
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -26,6 +34,7 @@ type DiscoveryClient struct {
 }
 
 type Subscriber struct {
+	// url for the Pub/Sub
 	url string
 
 	ctx  context.Context
@@ -153,7 +162,7 @@ func (s *Subscriber) run() {
 
 			}
 
-			// non-blocking send to the channel
+			// non-blocking send to the channel, discards changes if the channel is not ready
 			select {
 			case s.changes <- strings.Split(string(msg), "|"):
 			default:

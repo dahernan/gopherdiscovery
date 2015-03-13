@@ -15,16 +15,29 @@ import (
 )
 
 type Options struct {
-	SurveyTime   time.Duration
+	// SurveyTime is used to indicate the deadline for survey
+	// responses
+	SurveyTime time.Duration
+	// RecvDeadline is the time until the next recived of the SURVEY times out.
 	RecvDeadline time.Duration
-	PollTime     time.Duration
+	// PollTime is minimal time between SURVEYS (The time between SURVEYS could be greater than this time
+	// if the SURVEY process takes longer than that time)
+	PollTime time.Duration
 }
 
 type DiscoveryServer struct {
+	// url for the Survive heartbeat
+	// for example tcp://127.0.0.1:40007
 	urlServer string
+	// url for the Pub/Sub
+	// in this url you are going to get the changes on the set of nodes
+	// for example tcp://127.0.0.1:50007
 	urlPubSub string
-	opt       Options
 
+	// Time options
+	opt Options
+
+	// Set of the services that has been discovered
 	services *Services
 
 	ctx    context.Context
@@ -33,11 +46,14 @@ type DiscoveryServer struct {
 }
 
 type Services struct {
-	nodes     StringSet
+	// set of nodes discovered
+	nodes StringSet
+	// publisher, we are going to publish the changes of the set here
 	publisher *Publisher
 }
 
 type Publisher struct {
+	// url for pub/sub
 	url string
 
 	ctx  context.Context
@@ -97,8 +113,14 @@ func Server(urlServer string, urlPubSub string, opt Options) (*DiscoveryServer, 
 	return server, nil
 }
 
+// Shutdown the server
 func (d *DiscoveryServer) Cancel() {
 	d.cancel()
+}
+
+// Waits until the server finish running
+func (d *DiscoveryServer) Wait() {
+	<-d.ctx.Done()
 }
 
 func (d *DiscoveryServer) run() {
