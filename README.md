@@ -2,6 +2,8 @@
 
 This is a library to provide a simple way to do service discovery in Go, or other languages compatibles with [nanomsg](http://nanomsg.org/)/[mangos](https://github.com/gdamore/mangos)
 
+The library was inspired by this blog post http://www.bravenewgeek.com/fast-scalable-networking-in-go-with-mangos/
+
 # Install and Usage
 
 ```
