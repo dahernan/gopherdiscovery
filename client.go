@@ -1,7 +1,6 @@
 package gopherdiscovery
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -86,17 +85,16 @@ func (d *DiscoveryClient) run() {
 	for {
 		_, err = d.sock.Recv()
 		if err != nil {
-			log.Println("Cannot recv: %s", err.Error())
+			log.Println("DiscoveryClient: Cannot receive the SURVEY", err.Error())
 		} else {
 			select {
 			case <-d.ctx.Done():
 				return
 
 			default:
-				fmt.Printf("CLIENT(%s): SURVEY RESPONSE\n", d.service)
 				err = d.sock.Send([]byte(d.service))
 				if err != nil {
-					log.Println("Cannot send:", err.Error())
+					log.Println("DiscoveryClient: Cannot send the SURVEY response", err.Error())
 				}
 			}
 		}
@@ -150,18 +148,14 @@ func (s *Subscriber) run() {
 		default:
 			msg, err = s.sock.Recv()
 			if err != nil {
-				log.Println("SUB: Cannot receive:", err.Error())
+				log.Println("DiscoveryClient: Cannot SUBSCRIBE to the changes", err.Error())
 
 			}
-			log.Println("SUB: SEND CH ", &s.ctx)
 
 			// non-blocking send to the channel
 			select {
 			case s.changes <- strings.Split(string(msg), "|"):
-				log.Println("SUB: SEND CH DONE", &s.ctx)
-
 			default:
-				log.Println("SUB: SEND CH NONEEEEE", &s.ctx)
 			}
 
 		}

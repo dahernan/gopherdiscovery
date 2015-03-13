@@ -1,7 +1,6 @@
 package gopherdiscovery
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -113,33 +112,28 @@ func (d *DiscoveryServer) run() {
 	}
 }
 
-func (d *DiscoveryServer) poll() error {
+func (d *DiscoveryServer) poll() {
 	var err error
 	var msg []byte
 	var responses StringSet
 
-	fmt.Println("SERVER: SENDING DATE SURVEY REQUEST")
-	err = d.sock.Send([]byte("DATE"))
+	err = d.sock.Send([]byte(""))
 	if err != nil {
-		return err
+		log.Println("DiscoveryServer: Error sending the SURVEY", err.Error())
+		return
 	}
 
 	responses = NewStringSet()
 	for {
-		fmt.Println("SERVER: WAITING FOR RESPONSES")
-
 		msg, err = d.sock.Recv()
 		if err != nil {
 			if err == mangos.ErrRecvTimeout {
-				fmt.Println("SERVER: Timeout ", err.Error())
-
+				// Timeout means I can add the current responses to the SET
 				d.services.Add(responses)
-				return nil
+				return
 			}
-			fmt.Println("SERVER: ERR", err.Error())
-
+			log.Println("DiscoveryServer: Error reading SURVEY responses", err.Error())
 		} else {
-			fmt.Println("SERVER: new client", string(msg))
 			responses.Add(string(msg))
 		}
 	}
@@ -184,10 +178,9 @@ func (p *Publisher) run() {
 		case <-p.ctx.Done():
 			return
 		case msg := <-p.publishCh:
-			fmt.Println("PUB: publish ", msg)
 			err := p.sock.Send([]byte(strings.Join(msg, "|")))
 			if err != nil {
-				log.Println("PUB: Failed publishing:", err.Error())
+				log.Println("DiscoveryServer: Error PUBLISHING changes to the socket", err.Error())
 			}
 		}
 	}
@@ -203,7 +196,15 @@ func NewServices(publisher *Publisher) *Services {
 }
 
 func (s *Services) Add(responses StringSet) {
-	s.nodes = responses.Clone()
+	removed := s.nodes.Difference(responses)
+	added := responses.Difference(s.nodes)
+
+	// Do not publish anything if there is no changes
+	if removed.Cardinality() == 0 && added.Cardinality() == 0 {
+		return
+	}
+
+	s.nodes = responses
 	// publish the changes
 	s.publisher.Publish(s.nodes.ToSlice())
 }

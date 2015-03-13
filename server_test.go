@@ -203,7 +203,7 @@ func TestServerDiscoveryRemoveClients(t *testing.T) {
 }
 
 func TestServerDiscoveryOnlyChanges(t *testing.T) {
-	Convey("Discover multiple clients", t, func() {
+	Convey("Publish msg only with changes", t, func() {
 		urlServ := "tcp://127.0.0.1:40007"
 		urlPubSub := "tcp://127.0.0.1:50007"
 
@@ -223,22 +223,21 @@ func TestServerDiscoveryOnlyChanges(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		clients := <-clientOne.Nodes()
+		<-clientTwo.Nodes()
+		<-clientThree.Nodes()
 
 		So(clients, ShouldContain, "client1")
 		So(clients, ShouldContain, "client2")
 		So(clients, ShouldContain, "client3")
 
-		clients = <-clientTwo.Nodes()
+		time.Sleep(100 * time.Millisecond)
 
-		So(clients, ShouldContain, "client1")
-		So(clients, ShouldContain, "client2")
-		So(clients, ShouldContain, "client3")
+		select {
+		case clients = <-clientOne.Nodes():
+			t.Fail()
+		default:
 
-		clients = <-clientThree.Nodes()
-
-		So(clients, ShouldContain, "client1")
-		So(clients, ShouldContain, "client2")
-		So(clients, ShouldContain, "client3")
+		}
 
 		server.Cancel()
 		clientOne.Cancel()
