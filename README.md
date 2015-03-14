@@ -64,7 +64,7 @@ for nodes := range peers {
 
 ```
 
-## Subscribe to clients changes (new connections/disconections)
+## Subscribe to clients changes (new connections/disconnections)
 ```go
 
 var clients []string
@@ -109,12 +109,12 @@ server, err := gopherdiscovery.Server(urlServer, urlPubSub, opts)
 
 
 // any of the peers
-peers := groupcache.NewHTTPPool(me)
+pool := groupcache.NewHTTPPool(me)
 client, err := gopherdiscovery.ClientWithSub(urlServer, urlPubSub, me)
 
 peers, err = client.Peers()	
 for nodes := ranges peers {
-	peers.Set(nodes)	
+	pool.Set(nodes)	
 }
 
 ```
