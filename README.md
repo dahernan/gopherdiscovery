@@ -116,7 +116,7 @@ client, err := gopherdiscovery.ClientWithSub(urlServer, urlPubSub, me)
 
 peers, err = client.Peers()	
 for nodes := ranges peers {
-	pool.Set(nodes)	
+	pool.Set(nodes...)	
 }
 
 ```
