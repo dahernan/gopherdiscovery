@@ -14,6 +14,8 @@ go get github.com/dahernan/gopherdiscovery
 import "github.com/dahernan/gopherdiscovery"
 ```
 
+## Design
+[Design of the protocol](https://github.com/dahernan/gopherdiscovery/wiki/Design-of-the-protocol)
 
 # Use cases
 
