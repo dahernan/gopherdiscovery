@@ -1,0 +1,20 @@
+{
+	"ImportPath": "github.com/dahernan/gopherdiscovery",
+	"GoVersion": "go1.4",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gdamore/mangos",
+			"Comment": "v1.1.0-8-gffc3fd0",
+			"Rev": "ffc3fd0e48a67886012f10961a333a6ba9e3e031"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/goconvey/convey",
+			"Comment": "1.5.0-262-g1eff2ca",
+			"Rev": "1eff2caf156994f97fdcda660416c841f4321f0f"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "1cd7b7179478daf1f19f8b4b4f08106ef411619b"
+		}
+	]
+}
